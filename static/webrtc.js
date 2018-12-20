@@ -1,4 +1,4 @@
-const SIGURL = 'wss://demo.remotemonster.com:1234/'
+const SIGURL = 'wss://demo.remotemonster.com/ws1234'
 var localVideo;
 var remoteVideo;
 var remoteVideo2;
