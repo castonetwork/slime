@@ -21,7 +21,7 @@ window.RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || 
 window.RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription || window.webkitRTCSessionDescription;
 
 function pageReadyForRelayServer() {
-    console.log('pageReadyForRelayServer is called');
+    l('pageReadyForRelayServer is called');
     whoami = 'relay';
     serverConnection = new WebSocket(SIGURL);
     serverConnection.onmessage = gotMessageFromServer;
@@ -56,10 +56,10 @@ function startRelay() {
     peerConnection = new RTCPeerConnection(peerConnectionConfig);
     peerConnection.onicecandidate = gotIceCandidate;
     peerConnection.ontrack = gotRemoteStream;
-    peerConnection.oniceconnectionstatechange = handleiceevents4peerconnection;
+    peerConnection.oniceconnectionstatechange = gotCommonIceEvents;
     m('PeerConnection for sender is ready');
 }
-function startViewer(isCaller) {
+function startViewer() {
     whoami = 'view';
     peerConnection = new RTCPeerConnection(peerConnectionConfig);
     peerConnection.onicecandidate = gotIceCandidate;
@@ -67,13 +67,13 @@ function startViewer(isCaller) {
     peerConnection.addStream(localStream);
     peerConnection.getTransceivers()[0].direction='recvonly';
     peerConnection.getTransceivers()[1].direction='recvonly';
-    peerConnection.oniceconnectionstatechange = handleiceevents4peerconnection;
+    peerConnection.oniceconnectionstatechange = gotCommonIceEvents;
 
     l('Viewer: createoffer for receive');
     peerConnection.createOffer({offerToReceiveAudio:true, offerToReceiveVideo:true}).then(gotDescription).catch(rtcError);
 
 }
-function startCast(isCaller) {
+function startCast() {
     whoami = 'cast';
     peerConnection = new RTCPeerConnection(peerConnectionConfig);
     peerConnection.onicecandidate = gotIceCandidate;
@@ -81,13 +81,13 @@ function startCast(isCaller) {
     peerConnection.addStream(localStream);
     peerConnection.getTransceivers()[0].direction='sendonly';
     peerConnection.getTransceivers()[1].direction='sendonly';
-    peerConnection.oniceconnectionstatechange = handleiceevents4peerconnection;
+    peerConnection.oniceconnectionstatechange = gotCommonIceEvents;
 
     l("Caster: createOffer");
     peerConnection.createOffer({offerToReceiveAudio:false, offerToReceiveVideo:false}).then(gotDescription).catch(rtcError);
 }
 
-function handleiceevents4peerconnection(event){
+function gotCommonIceEvents(event){
     l('peerconnection ice state: '+ peerConnection.iceConnectionState);
     if (peerConnection.iceConnectionState === 'connected'){
         if (whoami === 'relay'){
@@ -109,8 +109,8 @@ function gotRelayIceEvents(event) {
     }
 }
 
-function gotDescriptionForThird(description) {
-    l('got local description for third');
+function gotDescriptionForViewer(description) {
+    l('got local description for viewers');
     var that = this;
     curpc.setLocalDescription(description, function() {
             that.serverConnection.send(JSON.stringify({'sdp': description}));
@@ -190,7 +190,7 @@ function gotMessageFromServer(message) {
             curpc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
                 .then( function() {
                         l('createAnswer for viewer');
-                        thatpc.createAnswer().then(gotDescriptionForThird).catch(rtcError);
+                        thatpc.createAnswer().then(gotDescriptionForViewer).catch(rtcError);
                         }).catch(rtcError);
         }else if (signal.ice){
             l('got message from sig server: signal.ice');
