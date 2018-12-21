@@ -1,4 +1,6 @@
 const SIGURL = 'wss://demo.remotemonster.com/ws1234'
+// const SIGURL = 'ws://localhost:1234'
+
 var localVideo;
 var remoteVideo;
 var remoteVideo2;
@@ -59,7 +61,7 @@ function startRelay() {
     peerConnection.oniceconnectionstatechange = gotCommonIceEvents;
     m('PeerConnection for sender is ready');
 }
-function startViewer() {
+function startViewer(isCaller) {
     whoami = 'view';
     peerConnection = new RTCPeerConnection(peerConnectionConfig);
     peerConnection.onicecandidate = gotIceCandidate;
@@ -73,7 +75,7 @@ function startViewer() {
     peerConnection.createOffer({offerToReceiveAudio:true, offerToReceiveVideo:true}).then(gotDescription).catch(rtcError);
 
 }
-function startCast() {
+function startCast(isCaller) {
     whoami = 'cast';
     peerConnection = new RTCPeerConnection(peerConnectionConfig);
     peerConnection.onicecandidate = gotIceCandidate;
