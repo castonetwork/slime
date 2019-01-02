@@ -38,7 +38,7 @@ function gotRemoteStream(event) {
 
 function gotCommonIceEvents(event) {}
 
-async function startViewer(isCaller) {
+async function startViewer() {
   pc = new RTCPeerConnection(pcConfig);
   pc.onicecandidate = gotIceCandidate;
   pc.ontrack = gotRemoteStream;
