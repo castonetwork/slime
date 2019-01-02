@@ -27,14 +27,10 @@ async function pageReady() {
 let myStream = new MediaStream();
 function gotRemoteStream(event) {
   l("got remote track. type:");
-  if (event.streams.length > 0) {
-    if (remoteVideo) remoteVideo.srcObject = event.streams[0];
-  } else {
-    if (event.type === "track") {
-      myStream.addTrack(event.track);
-      if (myStream.getTracks().length === 2) {
-        remoteVideo.srcObject = myStream;
-      }
+  if (event.type === "track") {
+    myStream.addTrack(event.track);
+    if (myStream.getTracks().length === 2) {
+      remoteVideo.srcObject = myStream;
     }
   }
   isComplete = true;
